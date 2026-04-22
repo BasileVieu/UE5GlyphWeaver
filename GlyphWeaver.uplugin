@@ -2,8 +2,8 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "FreeformSequence",
-	"Description": "FreeformSequence detects circular, bidirectional, and tolerant directional combos with no imposed starting point, for fluid and non-punitive interactions.",
+	"FriendlyName": "GlyphWeaver",
+	"Description": "GlyphWeaver detects circular, bidirectional, and tolerant directional combos with no imposed starting point, for fluid and non-punitive interactions.",
 	"Category": "Other",
 	"CreatedBy": "Jaeger",
 	"CreatedByURL": "",
@@ -16,7 +16,7 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "FreeformSequence",
+			"Name": "GlyphWeaver",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}

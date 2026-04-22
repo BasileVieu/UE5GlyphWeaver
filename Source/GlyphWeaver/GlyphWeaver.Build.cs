@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class FreeformSequence : ModuleRules
+public class GlyphWeaver : ModuleRules
 {
-	public FreeformSequence(ReadOnlyTargetRules Target) : base(Target)
+	public GlyphWeaver(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 

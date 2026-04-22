@@ -4,7 +4,7 @@
 
 #include "Modules/ModuleManager.h"
 
-class FFreeformSequenceModule : public IModuleInterface
+class FGlyphWeaverModule : public IModuleInterface
 {
 public:
 

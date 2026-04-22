@@ -2,14 +2,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "FreeformPlayerController.generated.h"
+#include "GlyphWeaverPlayerController.generated.h"
 
 struct FInputActionValue;
 class UInputMappingContext;
 class UInputAction;
 
 UCLASS()
-class FREEFORMSEQUENCE_API AFreeformPlayerController : public APlayerController
+class GLYPHWEAVER_API AGlyphWeaverPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
