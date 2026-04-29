@@ -1,1 +1,64 @@
 #include "GlyphWeaverSubsystem.h"
+#include "GlyphMatcher.h"
+#include "GlyphPuzzle.h"
+
+void UGlyphWeaverSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+	
+	PuzzleGlyphSequence.Add("Up", 0);
+	PuzzleGlyphSequence.Add("Right", 1);
+	PuzzleGlyphSequence.Add("Down", 2);
+	PuzzleGlyphSequence.Add("Left", 3);
+}
+
+void UGlyphWeaverSubsystem::SetPause(bool InIsPaused)
+{
+	if (InIsPaused)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(UpdatePlayerGlyphsTimerHandle);
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().SetTimer(UpdatePlayerGlyphsTimerHandle,
+			this, &UGlyphWeaverSubsystem::RemovePlayerGlyphsInputs, 3.0f, true);
+	}
+}
+
+void UGlyphWeaverSubsystem::AddPlayerGlyphInput(const FGlyph& InPlayerGlyph)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Add Player Glyph"));
+	
+	PlayerGlyphSequence.Add(InPlayerGlyph);
+	
+	GetWorld()->GetTimerManager().SetTimer(UpdatePlayerGlyphsTimerHandle,
+		this, &UGlyphWeaverSubsystem::RemovePlayerGlyphsInputs, 3.0f, true);
+	
+	PrintGlyphsSequence(PlayerGlyphSequence);
+	
+	GlyphMatcher->Matches(PuzzleGlyphSequence, PlayerGlyphSequence);
+}
+
+void UGlyphWeaverSubsystem::RemovePlayerGlyphsInputs()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Remove Player Glyph"));
+	
+	PlayerGlyphSequence.RemoveFirst();
+	
+	if (PlayerGlyphSequence.Size() == 0)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(UpdatePlayerGlyphsTimerHandle);
+	}
+	
+	PrintGlyphsSequence(PlayerGlyphSequence);
+}
+
+void UGlyphWeaverSubsystem::PrintGlyphsSequence(FGlyphSequence& GlyphSequenceToPrint)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Player Glyphs count: %d\n"), GlyphSequenceToPrint.Size());
+	
+	for (int i = 0; i < GlyphSequenceToPrint.Size(); i++)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Player Glyph %d: %s"), i, *GlyphSequenceToPrint.Get(i).Name.ToString());
+	}
+}

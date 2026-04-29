@@ -17,6 +17,8 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 	
+	void SetPause();
+	
 	void DPadUp(const FInputActionValue& Value);
 	void DPadDown(const FInputActionValue& Value);
 	void DPadLeft(const FInputActionValue& Value);
@@ -25,6 +27,9 @@ protected:
 private:
 	UPROPERTY(EditAnywhere)
 	UInputMappingContext* InputMappingFreeform;
+	
+	UPROPERTY(EditAnywhere)
+	UInputAction* IA_Pause;
 	
 	UPROPERTY(EditAnywhere)
 	UInputAction* IA_DPad_Up;
@@ -37,4 +42,6 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	UInputAction* IA_DPad_Right;
+	
+	bool IsPaused = false;
 };
