@@ -61,7 +61,7 @@ void AGlyphWeaverPlayerController::DPadLeft(const FInputActionValue& Value)
 {
 	if (Value.Get<bool>())
 	{
-		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddPlayerGlyphInput(FGlyph("Left", 3));
+		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddPlayerGlyphInput(FGlyph("Left", 4));
 	}
 }
 

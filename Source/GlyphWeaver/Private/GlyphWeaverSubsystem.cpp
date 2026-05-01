@@ -7,9 +7,10 @@ void UGlyphWeaverSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 	
 	PuzzleGlyphSequence.Add("Up", 0);
-	PuzzleGlyphSequence.Add("Right", 1);
 	PuzzleGlyphSequence.Add("Down", 2);
-	PuzzleGlyphSequence.Add("Left", 3);
+	PuzzleGlyphSequence.Add("Left", 4);
+	PuzzleGlyphSequence.Add("Right", 1);
+	PuzzleGlyphSequence.Add("Left", 4);
 }
 
 void UGlyphWeaverSubsystem::SetPause(bool InIsPaused)
@@ -36,14 +37,15 @@ void UGlyphWeaverSubsystem::AddPlayerGlyphInput(const FGlyph& InPlayerGlyph)
 	
 	PrintGlyphsSequence(PlayerGlyphSequence);
 	
-	GlyphMatcher->Matches(PuzzleGlyphSequence, PlayerGlyphSequence);
+	UE_LOG(LogTemp, Warning, TEXT("Matches %s"), GlyphMatcher->Matches(PuzzleGlyphSequence, PlayerGlyphSequence, 5)
+		? TEXT("True") : TEXT("False"));
 }
 
 void UGlyphWeaverSubsystem::RemovePlayerGlyphsInputs()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Remove Player Glyph"));
 	
-	PlayerGlyphSequence.RemoveFirst();
+	PlayerGlyphSequence.Empty();
 	
 	if (PlayerGlyphSequence.Size() == 0)
 	{
@@ -55,10 +57,10 @@ void UGlyphWeaverSubsystem::RemovePlayerGlyphsInputs()
 
 void UGlyphWeaverSubsystem::PrintGlyphsSequence(FGlyphSequence& GlyphSequenceToPrint)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Player Glyphs count: %d\n"), GlyphSequenceToPrint.Size());
+	UE_LOG(LogTemp, Warning, TEXT("Glyphs count: %d\n"), GlyphSequenceToPrint.Size());
 	
 	for (int i = 0; i < GlyphSequenceToPrint.Size(); i++)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Player Glyph %d: %s"), i, *GlyphSequenceToPrint.Get(i).Name.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Glyph %d: %s"), i, *GlyphSequenceToPrint.Get(i).Name.ToString());
 	}
 }

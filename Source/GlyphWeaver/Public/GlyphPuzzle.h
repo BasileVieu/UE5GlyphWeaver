@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/Interface.h"
 #include "GlyphPuzzle.generated.h"
 
 USTRUCT()
@@ -25,9 +24,9 @@ struct FGlyphSequence
 	void Add(const FGlyph& InGlyph);
 	void Add(FName InName, int InValue);
 	void RemoveFirst();
+	void Empty();
 	
 	FGlyph& Get(int InIndex);
-	int CircularMove(int InFirstIndex, int InSecondIndex, int InSequenceSize);
 	
 	int Size() const;
 	

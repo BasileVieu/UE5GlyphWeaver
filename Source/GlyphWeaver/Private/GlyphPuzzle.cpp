@@ -36,28 +36,14 @@ void FGlyphSequence::RemoveFirst()
 	}
 }
 
+void FGlyphSequence::Empty()
+{
+	GlyphSequence.Empty();
+}
+
 FGlyph& FGlyphSequence::Get(const int InIndex)
 {
 	return GlyphSequence[InIndex];
-}
-
-int FGlyphSequence::CircularMove(int InFirstIndex, int InSecondIndex, int InSequenceSize)
-{
-	if (InFirstIndex < 0
-		|| InFirstIndex >= Size()
-		|| InSecondIndex < 0
-		|| InSecondIndex >= Size())
-	{
-		return std::numeric_limits<int>::min();
-	}
-	
-	int FirstValue = Get(InFirstIndex).Value;
-	int SecondValue = Get(InSecondIndex).Value;
-	
-	int Diff = FirstValue - SecondValue;
-	int AbsDiff = FMath::Abs(Diff);
-	
-	return FMath::Min(AbsDiff, InSequenceSize - AbsDiff) * (Diff > 0 ? 1 : -1);
 }
 
 int FGlyphSequence::Size() const
