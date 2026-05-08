@@ -1,6 +1,8 @@
 #include "GlyphWeaverPlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GlyphDataAsset.h"
+#include "GlyphSequenceDataAsset.h"
 #include "GlyphWeaverSubsystem.h"
 
 void AGlyphWeaverPlayerController::BeginPlay()
@@ -11,6 +13,21 @@ void AGlyphWeaverPlayerController::BeginPlay()
 	{
 		Subsystem->AddMappingContext(InputMappingFreeform, 0);
 	}
+	
+	UGlyphSequenceDataAsset* SequenceDataAsset = PuzzleGlyphSequenceDataAsset.LoadSynchronous();	
+	GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->SetupPuzzle(SequenceDataAsset->CreateGlyphSequence());
+	
+	UGlyphDataAsset* UpDataAsset = PuzzleGlyphDataAssetUp.LoadSynchronous();
+	GlyphUp = UpDataAsset->CreateGlyph();
+	
+	UGlyphDataAsset* DownDataAsset = PuzzleGlyphDataAssetDown.LoadSynchronous();
+	GlyphDown = DownDataAsset->CreateGlyph();
+	
+	UGlyphDataAsset* LeftDataAsset = PuzzleGlyphDataAssetLeft.LoadSynchronous();
+	GlyphLeft = LeftDataAsset->CreateGlyph();
+	
+	UGlyphDataAsset* RightDataAsset = PuzzleGlyphDataAssetRight.LoadSynchronous();
+	GlyphRight = RightDataAsset->CreateGlyph();
 }
 
 void AGlyphWeaverPlayerController::SetupInputComponent()
@@ -45,7 +62,7 @@ void AGlyphWeaverPlayerController::DPadUp(const FInputActionValue& Value)
 {
 	if (Value.Get<bool>())
 	{
-		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddPlayerGlyphInput(FGlyph("Up", 0));
+		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddPlayerGlyphInput(GlyphUp);
 	}
 }
 
@@ -53,7 +70,7 @@ void AGlyphWeaverPlayerController::DPadDown(const FInputActionValue& Value)
 {
 	if (Value.Get<bool>())
 	{
-		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddPlayerGlyphInput(FGlyph("Down", 2));
+		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddPlayerGlyphInput(GlyphDown);
 	}
 }
 
@@ -61,7 +78,7 @@ void AGlyphWeaverPlayerController::DPadLeft(const FInputActionValue& Value)
 {
 	if (Value.Get<bool>())
 	{
-		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddPlayerGlyphInput(FGlyph("Left", 4));
+		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddPlayerGlyphInput(GlyphLeft);
 	}
 }
 
@@ -69,6 +86,6 @@ void AGlyphWeaverPlayerController::DPadRight(const FInputActionValue& Value)
 {
 	if (Value.Get<bool>())
 	{
-		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddPlayerGlyphInput(FGlyph("Right", 1));
+		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddPlayerGlyphInput(GlyphRight);
 	}
 }

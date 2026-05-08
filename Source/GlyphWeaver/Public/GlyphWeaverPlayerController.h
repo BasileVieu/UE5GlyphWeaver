@@ -1,10 +1,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GlyphSequence.h"
 #include "GameFramework/PlayerController.h"
 #include "GlyphWeaverPlayerController.generated.h"
 
 struct FInputActionValue;
+class UGlyphDataAsset;
+class UGlyphSequenceDataAsset;
 class UInputMappingContext;
 class UInputAction;
 
@@ -25,23 +28,43 @@ protected:
 	void DPadRight(const FInputActionValue& Value);
 	
 private:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="GlyphWeaver")
+	TSoftObjectPtr<UGlyphSequenceDataAsset> PuzzleGlyphSequenceDataAsset;
+	
+	UPROPERTY(EditAnywhere, Category="GlyphWeaver")
+	TSoftObjectPtr<UGlyphDataAsset> PuzzleGlyphDataAssetUp;
+	
+	UPROPERTY(EditAnywhere, Category="GlyphWeaver")
+	TSoftObjectPtr<UGlyphDataAsset> PuzzleGlyphDataAssetDown;
+	
+	UPROPERTY(EditAnywhere, Category="GlyphWeaver")
+	TSoftObjectPtr<UGlyphDataAsset> PuzzleGlyphDataAssetLeft;
+	
+	UPROPERTY(EditAnywhere, Category="GlyphWeaver")
+	TSoftObjectPtr<UGlyphDataAsset> PuzzleGlyphDataAssetRight;
+	
+	UPROPERTY(EditAnywhere, Category="Input")
 	UInputMappingContext* InputMappingFreeform;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* IA_Pause;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* IA_DPad_Up;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* IA_DPad_Down;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* IA_DPad_Left;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* IA_DPad_Right;
 	
 	bool IsPaused = false;
+	
+	FGlyph GlyphUp;
+	FGlyph GlyphDown;
+	FGlyph GlyphLeft;
+	FGlyph GlyphRight;
 };

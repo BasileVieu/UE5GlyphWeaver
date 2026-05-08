@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "GlyphPuzzle.generated.h"
+#include "GlyphSequence.generated.h"
 
 USTRUCT()
 struct FGlyph
@@ -12,11 +12,14 @@ struct FGlyph
 	explicit FGlyph(FName InName, int InValue);
 	bool operator==(const FGlyph& InOtherGlyph) const;
 	
+	UPROPERTY(EditAnywhere)
 	FName Name;
+	
+	UPROPERTY(EditAnywhere)
 	int Value;
 };
 
-USTRUCT()
+USTRUCT(Blueprintable)
 struct FGlyphSequence
 {
 	GENERATED_BODY()

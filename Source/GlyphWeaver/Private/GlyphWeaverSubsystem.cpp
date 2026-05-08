@@ -1,16 +1,15 @@
 #include "GlyphWeaverSubsystem.h"
 #include "GlyphMatcher.h"
-#include "GlyphPuzzle.h"
+#include "GlyphSequence.h"
 
 void UGlyphWeaverSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-	
-	PuzzleGlyphSequence.Add("Up", 0);
-	PuzzleGlyphSequence.Add("Down", 2);
-	PuzzleGlyphSequence.Add("Left", 4);
-	PuzzleGlyphSequence.Add("Right", 1);
-	PuzzleGlyphSequence.Add("Left", 4);
+}
+
+void UGlyphWeaverSubsystem::SetupPuzzle(const FGlyphSequence& InPuzzleSequence)
+{
+	PuzzleGlyphSequence = InPuzzleSequence;
 }
 
 void UGlyphWeaverSubsystem::SetPause(bool InIsPaused)
@@ -37,7 +36,7 @@ void UGlyphWeaverSubsystem::AddPlayerGlyphInput(const FGlyph& InPlayerGlyph)
 	
 	PrintGlyphsSequence(PlayerGlyphSequence);
 	
-	UE_LOG(LogTemp, Warning, TEXT("Matches %s"), GlyphMatcher->Matches(PuzzleGlyphSequence, PlayerGlyphSequence, 5)
+	UE_LOG(LogTemp, Warning, TEXT("Matches %s"), GlyphMatcher->Matches(PuzzleGlyphSequence, PlayerGlyphSequence, 4)
 		? TEXT("True") : TEXT("False"));
 }
 

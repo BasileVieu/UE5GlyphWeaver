@@ -1,4 +1,4 @@
-﻿#include "GlyphPuzzle.h"
+﻿#include "GlyphSequence.h"
 
 FGlyph::FGlyph()
 {

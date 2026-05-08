@@ -1,25 +1,67 @@
 ﻿#include "GlyphMatcher.h"
-#include "GlyphPuzzle.h"
+#include "GlyphSequence.h"
 
 bool UGlyphMatcher::Matches(FGlyphSequence& InTargetSequence, FGlyphSequence& InGuessSequence, int InModulo)
 {
-	FGlyphSequence InversedGuess = InGuessSequence;
-	Algo::Reverse(InversedGuess.GlyphSequence);
+	if (InTargetSequence.Size() > InGuessSequence.Size())
+	{
+		return false;
+	}
 	
-	TArray<int> TargetDeltas = BuildDeltas(InTargetSequence, InModulo);
+	TArray<int> DeltasTarget = BuildDeltas(InTargetSequence, InModulo);
 	
-	TArray<int> GuessDeltas = BuildDeltas(InGuessSequence, InModulo);
+	//FGlyphSequence InversedGuess = InGuessSequence;
+	//Algo::Reverse(InversedGuess.GlyphSequence);
 	
-	TArray<int> InversedGuessDeltas = BuildDeltas(InversedGuess, InModulo);
+	for (int i = 0; i <= InGuessSequence.Size() - InTargetSequence.Size(); i++)
+	{
+		FGlyphSequence ReducedSequence;
+		
+		for (int j = 0; j < InTargetSequence.Size(); j++)
+		{
+			ReducedSequence.Add(InGuessSequence.Get(i + j));
+		}
+		
+		TArray<int> ReducedDeltas = BuildDeltas(ReducedSequence, InModulo);
+		
+		if (MatchDeltas(ReducedDeltas, DeltasTarget))
+		{
+			return true;
+		}
+	}
 	
-	TArray<int> CanonicalTarget = GetBestCanonicalSequence(TargetDeltas);
-	
-	TArray<int> CanonicalGuess = GetBestCanonicalSequence(GuessDeltas);
-	
-	TArray<int> CanonicalInversedGuess = GetBestCanonicalSequence(InversedGuessDeltas);
+	return false;
+}
 
-	return CanonicalTarget == CanonicalGuess
-		|| CanonicalTarget == CanonicalInversedGuess;
+bool UGlyphMatcher::MatchDeltas(const TArray<int>& InSequence, const TArray<int>& InSubSequence)
+{
+	TArray<int> ExtendedSequence = InSequence;
+	ExtendedSequence.Append(InSequence);
+	
+	for (int start = 0; start < ExtendedSequence.Num() - InSubSequence.Num(); start++)
+	{
+		bool Match = true;
+		
+		for (int i = 0; i < InSubSequence.Num(); i++)
+		{
+			/*UE_LOG(LogTemp, Warning, TEXT("start: %d, i: %d, start + i: %d, Delta Target: %d, Extended Deltas Guess: %d"),
+				start, i, start + i, InSubSequence[i], ExtendedSequence[start + i]);*/
+			
+			if (InSubSequence[i] != ExtendedSequence[start + i])
+			{
+				Match = false;
+				
+				break;
+			}
+		}
+		
+		if (Match)
+		{
+			return true;
+		}
+	}
+	
+	return false;
 }
 
 TArray<int> UGlyphMatcher::BuildDeltas(FGlyphSequence& InSequence, int InModulo)
@@ -43,56 +85,6 @@ int UGlyphMatcher::CircularDelta(FGlyphSequence& InSequence, int InIndex, int In
 	int Backward = (FirstValue - SecondValue + InModulo) % InModulo;
 	
 	return Forward <= Backward ? Forward : -Backward;
-}
-
-TArray<int> UGlyphMatcher::GetBestCanonicalSequence(const TArray<int>& InSequence)
-{
-	int Length = InSequence.Num();
-
-	TArray<int> Best = InSequence;
-
-	for (int start = 1; start < Length; start++)
-	{
-		TArray<int> Candidate;
-
-		for (int i = 0; i < Length; i++)
-		{
-			Candidate.Add(InSequence[(start + i) % Length]);
-		}
-
-		ECanonicalSequenceState CanonicalSequenceState = GetCanonicalSequenceState(Candidate, Best);
-
-		if (CanonicalSequenceState == ECanonicalSequenceState::Smaller)
-		{
-			Best = Candidate;
-		}
-	}
-
-	return Best;
-}
-
-ECanonicalSequenceState UGlyphMatcher::GetCanonicalSequenceState(const TArray<int>& InFirstSequence,
-                                                                 const TArray<int>& InSecondSequence)
-{
-	if (InFirstSequence.Num() != InSecondSequence.Num())
-	{
-		return ECanonicalSequenceState::Error;
-	}
-
-	for (int i = 0; i < InFirstSequence.Num(); i++)
-	{
-		if (InFirstSequence[i] < InSecondSequence[i])
-		{
-			return ECanonicalSequenceState::Smaller;
-		}
-
-		if (InFirstSequence[i] > InSecondSequence[i])
-		{
-			return ECanonicalSequenceState::Bigger;
-		}
-	}
-
-	return ECanonicalSequenceState::Equal;
 }
 
 void UGlyphMatcher::PrintSequence(const TArray<int>& InSequence, const FString& InName)
