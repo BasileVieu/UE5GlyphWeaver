@@ -1,13 +1,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GlyphSequence.h"
+#include "GlyphPuzzle/GlyphPuzzle.h"
 #include "GameFramework/PlayerController.h"
 #include "GlyphWeaverPlayerController.generated.h"
 
 struct FInputActionValue;
+class UGlyphPuzzleDataAsset;
 class UGlyphDataAsset;
-class UGlyphSequenceDataAsset;
 class UInputMappingContext;
 class UInputAction;
 
@@ -29,7 +29,7 @@ protected:
 	
 private:
 	UPROPERTY(EditAnywhere, Category="GlyphWeaver")
-	TSoftObjectPtr<UGlyphSequenceDataAsset> PuzzleGlyphSequenceDataAsset;
+	TSoftObjectPtr<UGlyphPuzzleDataAsset> GlyphPuzzleDataAsset;
 	
 	UPROPERTY(EditAnywhere, Category="GlyphWeaver")
 	TSoftObjectPtr<UGlyphDataAsset> PuzzleGlyphDataAssetUp;

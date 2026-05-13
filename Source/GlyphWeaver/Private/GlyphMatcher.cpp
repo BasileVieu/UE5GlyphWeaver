@@ -1,90 +1,56 @@
 ﻿#include "GlyphMatcher.h"
-#include "GlyphSequence.h"
+#include "GlyphPuzzle/GlyphPuzzle.h"
+#include "GlyphPuzzle/GlyphPuzzleRule.h"
 
-bool UGlyphMatcher::Matches(FGlyphSequence& InTargetSequence, FGlyphSequence& InGuessSequence, int InModulo)
+bool UGlyphMatcher::Matches(FGlyphSequence& InTargetSequence, FGlyphSequence& InGuessSequence, int InModulo, TArray<UGlyphPuzzleRule*> InRules)
 {
 	if (InTargetSequence.Size() > InGuessSequence.Size())
 	{
 		return false;
 	}
 	
-	TArray<int> DeltasTarget = BuildDeltas(InTargetSequence, InModulo);
+	TArray<int> TargetBaseValues;
 	
-	//FGlyphSequence InversedGuess = InGuessSequence;
-	//Algo::Reverse(InversedGuess.GlyphSequence);
-	
-	for (int i = 0; i <= InGuessSequence.Size() - InTargetSequence.Size(); i++)
+	for (FGlyph& Glyph : InTargetSequence.Glyphs)
 	{
-		FGlyphSequence ReducedSequence;
-		
-		for (int j = 0; j < InTargetSequence.Size(); j++)
+		TargetBaseValues.Add(Glyph.Value);
+	}
+	
+	TArray<int> GuessBaseValues;
+	
+	for (FGlyph& Glyph : InGuessSequence.Glyphs)
+	{
+		GuessBaseValues.Add(Glyph.Value);
+	}
+	
+	FGlyphVariants Target(TargetBaseValues);
+	FGlyphVariants Guess(GuessBaseValues);
+	
+	for (UGlyphPuzzleRule* Rule : InRules)
+	{
+		if (Rule->ApplyToTarget)
 		{
-			ReducedSequence.Add(InGuessSequence.Get(i + j));
+			Target = Rule->Apply(Target, InModulo, InTargetSequence.Size());
 		}
 		
-		TArray<int> ReducedDeltas = BuildDeltas(ReducedSequence, InModulo);
-		
-		if (MatchDeltas(ReducedDeltas, DeltasTarget))
+		if (Rule->ApplyToGuess)
 		{
-			return true;
+			Guess = Rule->Apply(Guess, InModulo, InTargetSequence.Size());
 		}
 	}
 	
-	return false;
-}
-
-bool UGlyphMatcher::MatchDeltas(const TArray<int>& InSequence, const TArray<int>& InSubSequence)
-{
-	TArray<int> ExtendedSequence = InSequence;
-	ExtendedSequence.Append(InSequence);
-	
-	for (int start = 0; start < ExtendedSequence.Num() - InSubSequence.Num(); start++)
+	for (int i = 0; i < Target.Variants.Num(); i++)
 	{
-		bool Match = true;
-		
-		for (int i = 0; i < InSubSequence.Num(); i++)
+		for (int j = 0; j < Guess.Variants.Num(); j++)
 		{
-			/*UE_LOG(LogTemp, Warning, TEXT("start: %d, i: %d, start + i: %d, Delta Target: %d, Extended Deltas Guess: %d"),
-				start, i, start + i, InSubSequence[i], ExtendedSequence[start + i]);*/
-			
-			if (InSubSequence[i] != ExtendedSequence[start + i])
+			if (Target.Variants[i] == Guess.Variants[j])
 			{
-				Match = false;
-				
-				break;
+				return true;
 			}
 		}
-		
-		if (Match)
-		{
-			return true;
-		}
 	}
 	
 	return false;
-}
-
-TArray<int> UGlyphMatcher::BuildDeltas(FGlyphSequence& InSequence, int InModulo)
-{
-	TArray<int> Result;
-	
-	for (int i = 0; i < InSequence.Size(); i++)
-	{
-		Result.Add(CircularDelta(InSequence, i, InModulo));
-	}
-	
-	return Result;
-}
-
-int UGlyphMatcher::CircularDelta(FGlyphSequence& InSequence, int InIndex, int InModulo)
-{
-	int FirstValue = InSequence.Get(InIndex).Value;
-	int SecondValue = InSequence.Get((InIndex + 1) % InSequence.Size()).Value;
-	
-	int Forward = (SecondValue - FirstValue + InModulo) % InModulo;
-	int Backward = (FirstValue - SecondValue + InModulo) % InModulo;
-	
-	return Forward <= Backward ? Forward : -Backward;
 }
 
 void UGlyphMatcher::PrintSequence(const TArray<int>& InSequence, const FString& InName)

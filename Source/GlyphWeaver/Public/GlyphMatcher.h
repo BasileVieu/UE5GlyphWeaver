@@ -3,8 +3,8 @@
 #include "CoreMinimal.h"
 #include "GlyphMatcher.generated.h"
 
-class UGlyphSequenceDataAsset;
 struct FGlyphSequence;
+class UGlyphPuzzleRule;
 
 UCLASS()
 class GLYPHWEAVER_API UGlyphMatcher : public UObject
@@ -12,13 +12,6 @@ class GLYPHWEAVER_API UGlyphMatcher : public UObject
 	GENERATED_BODY()
 	
 public:
-	bool Matches(FGlyphSequence& InTargetSequence, FGlyphSequence& InGuessSequence, int InModulo);
-	bool MatchDeltas(const TArray<int>& InFirstSequence, const TArray<int>& InSecondSequence);
-	TArray<int> BuildDeltas(FGlyphSequence& InSequence, int InModulo);
-	int CircularDelta(FGlyphSequence& InSequence, int InIndex, int InModulo);
+	bool Matches(FGlyphSequence& InTargetSequence, FGlyphSequence& InGuessSequence, int InModulo, TArray<UGlyphPuzzleRule*> InRules);
 	void PrintSequence(const TArray<int>& InSequence, const FString& InName);
-	
-private:
-	UPROPERTY()
-	UGlyphSequenceDataAsset* TargetSequenceDataSequence;
 };

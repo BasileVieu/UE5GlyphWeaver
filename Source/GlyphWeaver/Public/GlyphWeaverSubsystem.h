@@ -1,11 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GlyphSequence.h"
+#include "GlyphPuzzle/GlyphPuzzle.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "GlyphWeaverSubsystem.generated.h"
 
-class UGlyphSequenceDataAsset;
+class UGlyphPuzzleDataAsset;
 class UGlyphMatcher;
 
 UCLASS()
@@ -17,10 +17,10 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	/**
 	 * Initialize PuzzleGlyphSequence.
-	 * @param InPuzzleSequence Original Puzzle Sequence
+	 * @param InPuzzleDataAsset Original Puzzle
 	 */
 	UFUNCTION(BlueprintCallable, Category="GlyphWeaver", meta=(ToolTip="Initialize PuzzleGlyphSequence"))
-	void SetupPuzzle(const FGlyphSequence& InPuzzleSequence);
+	void SetupPuzzle(UGlyphPuzzleDataAsset* InPuzzleDataAsset);
 	void SetPause(bool InIsPaused);
 	void AddPlayerGlyphInput(const FGlyph& InPlayerGlyph);
 	void RemovePlayerGlyphsInputs();
@@ -30,11 +30,10 @@ private:
 	FTimerHandle UpdatePlayerGlyphsTimerHandle;
 	
 	UPROPERTY()
-	FGlyphSequence PuzzleGlyphSequence;
-	
-	UPROPERTY()
 	FGlyphSequence PlayerGlyphSequence;
 	
 	UPROPERTY()
 	UGlyphMatcher* GlyphMatcher;
+	
+	FGlyphPuzzle GlyphPuzzle;
 };

@@ -1,5 +1,5 @@
-#include "GlyphSequenceDataAsset.h"
-#include "GlyphDataAsset.h"
+#include "GlyphPuzzle/GlyphSequenceDataAsset.h"
+#include "GlyphPuzzle/GlyphDataAsset.h"
 
 FGlyphSequence UGlyphSequenceDataAsset::CreateGlyphSequence()
 {

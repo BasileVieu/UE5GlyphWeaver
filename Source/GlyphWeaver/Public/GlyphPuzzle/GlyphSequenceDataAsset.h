@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GlyphSequence.h"
+#include "GlyphPuzzle.h"
 #include "Engine/DataAsset.h"
 #include "GlyphSequenceDataAsset.generated.h"
 

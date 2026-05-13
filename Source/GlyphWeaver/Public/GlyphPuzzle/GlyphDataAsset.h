@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GlyphSequence.h"
+#include "GlyphPuzzle.h"
 #include "Engine/DataAsset.h"
 #include "GlyphDataAsset.generated.h"
 
@@ -11,7 +11,7 @@ class GLYPHWEAVER_API UGlyphDataAsset : public UPrimaryDataAsset
 	GENERATED_BODY()
 	
 public:
-	FGlyph CreateGlyph();
+	FGlyph CreateGlyph() const;
 	
 private:	
 	UPROPERTY(EditAnywhere)

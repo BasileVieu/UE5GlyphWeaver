@@ -1,8 +1,7 @@
 #include "GlyphWeaverPlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "GlyphDataAsset.h"
-#include "GlyphSequenceDataAsset.h"
+#include "GlyphPuzzle/GlyphDataAsset.h"
 #include "GlyphWeaverSubsystem.h"
 
 void AGlyphWeaverPlayerController::BeginPlay()
@@ -14,8 +13,8 @@ void AGlyphWeaverPlayerController::BeginPlay()
 		Subsystem->AddMappingContext(InputMappingFreeform, 0);
 	}
 	
-	UGlyphSequenceDataAsset* SequenceDataAsset = PuzzleGlyphSequenceDataAsset.LoadSynchronous();	
-	GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->SetupPuzzle(SequenceDataAsset->CreateGlyphSequence());
+	UGlyphPuzzleDataAsset* PuzzleDataAsset = GlyphPuzzleDataAsset.LoadSynchronous();	
+	GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->SetupPuzzle(PuzzleDataAsset);
 	
 	UGlyphDataAsset* UpDataAsset = PuzzleGlyphDataAssetUp.LoadSynchronous();
 	GlyphUp = UpDataAsset->CreateGlyph();

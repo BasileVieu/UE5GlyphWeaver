@@ -1,15 +1,21 @@
 #include "GlyphWeaverSubsystem.h"
 #include "GlyphMatcher.h"
-#include "GlyphSequence.h"
+#include "GlyphPuzzle/GlyphPuzzleDataAsset.h"
+#include "GlyphPuzzle/GlyphSequenceDataAsset.h"
 
 void UGlyphWeaverSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 }
 
-void UGlyphWeaverSubsystem::SetupPuzzle(const FGlyphSequence& InPuzzleSequence)
+void UGlyphWeaverSubsystem::SetupPuzzle(UGlyphPuzzleDataAsset* InPuzzleDataAsset)
 {
-	PuzzleGlyphSequence = InPuzzleSequence;
+	UGlyphSequenceDataAsset* SequenceDataAsset = InPuzzleDataAsset->SequenceDataAsset.LoadSynchronous();
+	GlyphPuzzle.Sequence = SequenceDataAsset->CreateGlyphSequence();
+	GlyphPuzzle.State = EGlyphPuzzleState::Inactive;
+	GlyphPuzzle.Rules = InPuzzleDataAsset->Rules;
+	
+	PrintGlyphsSequence(GlyphPuzzle.Sequence);
 }
 
 void UGlyphWeaverSubsystem::SetPause(bool InIsPaused)
@@ -29,6 +35,11 @@ void UGlyphWeaverSubsystem::AddPlayerGlyphInput(const FGlyph& InPlayerGlyph)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Add Player Glyph"));
 	
+	if (!GlyphPuzzle.Sequence.ContainsGlyph(InPlayerGlyph))
+	{
+		return;
+	}
+	
 	PlayerGlyphSequence.Add(InPlayerGlyph);
 	
 	GetWorld()->GetTimerManager().SetTimer(UpdatePlayerGlyphsTimerHandle,
@@ -36,7 +47,7 @@ void UGlyphWeaverSubsystem::AddPlayerGlyphInput(const FGlyph& InPlayerGlyph)
 	
 	PrintGlyphsSequence(PlayerGlyphSequence);
 	
-	UE_LOG(LogTemp, Warning, TEXT("Matches %s"), GlyphMatcher->Matches(PuzzleGlyphSequence, PlayerGlyphSequence, 4)
+	UE_LOG(LogTemp, Warning, TEXT("Matches %s"), GlyphMatcher->Matches(GlyphPuzzle.Sequence, PlayerGlyphSequence, 4, GlyphPuzzle.Rules)
 		? TEXT("True") : TEXT("False"));
 }
 
@@ -46,10 +57,7 @@ void UGlyphWeaverSubsystem::RemovePlayerGlyphsInputs()
 	
 	PlayerGlyphSequence.Empty();
 	
-	if (PlayerGlyphSequence.Size() == 0)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(UpdatePlayerGlyphsTimerHandle);
-	}
+	GetWorld()->GetTimerManager().ClearTimer(UpdatePlayerGlyphsTimerHandle);
 	
 	PrintGlyphsSequence(PlayerGlyphSequence);
 }
