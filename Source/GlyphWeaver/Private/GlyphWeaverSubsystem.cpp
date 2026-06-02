@@ -1,73 +1,73 @@
 #include "GlyphWeaverSubsystem.h"
 #include "GlyphMatcher.h"
+#include "GlyphWeaver.h"
+#include "GlyphWeaverUtils.h"
 #include "GlyphPuzzle/GlyphPuzzleDataAsset.h"
 #include "GlyphPuzzle/GlyphSequenceDataAsset.h"
 
 void UGlyphWeaverSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
+	
+	GuessGlyphSequence.Name = "Guess Sequence";
 }
 
-void UGlyphWeaverSubsystem::SetupPuzzle(UGlyphPuzzleDataAsset* InPuzzleDataAsset)
+void UGlyphWeaverSubsystem::SetupPuzzle(const UGlyphPuzzleDataAsset* InPuzzleDataAsset)
 {
+	GlyphPuzzle.Name = InPuzzleDataAsset->PuzzleName;
 	UGlyphSequenceDataAsset* SequenceDataAsset = InPuzzleDataAsset->SequenceDataAsset.LoadSynchronous();
 	GlyphPuzzle.Sequence = SequenceDataAsset->CreateGlyphSequence();
 	GlyphPuzzle.State = EGlyphPuzzleState::Inactive;
 	GlyphPuzzle.Rules = InPuzzleDataAsset->Rules;
 	
-	PrintGlyphsSequence(GlyphPuzzle.Sequence);
+	UGlyphWeaverUtils::PrintPuzzle(GlyphPuzzle);
 }
 
-void UGlyphWeaverSubsystem::SetPause(bool InIsPaused)
+void UGlyphWeaverSubsystem::AddGuessGlyphInput(FGlyph& InPlayerGlyph)
 {
-	if (InIsPaused)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(UpdatePlayerGlyphsTimerHandle);
-	}
-	else
-	{
-		GetWorld()->GetTimerManager().SetTimer(UpdatePlayerGlyphsTimerHandle,
-			this, &UGlyphWeaverSubsystem::RemovePlayerGlyphsInputs, 3.0f, true);
-	}
-}
-
-void UGlyphWeaverSubsystem::AddPlayerGlyphInput(const FGlyph& InPlayerGlyph)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Add Player Glyph"));
+	UE_LOG(LogGlyphWeaver, Warning, TEXT("Add Player Glyph"));
 	
 	if (!GlyphPuzzle.Sequence.ContainsGlyph(InPlayerGlyph))
 	{
 		return;
 	}
 	
-	PlayerGlyphSequence.Add(InPlayerGlyph);
+	OnGuessGlyphAdded.Broadcast(InPlayerGlyph);
 	
-	GetWorld()->GetTimerManager().SetTimer(UpdatePlayerGlyphsTimerHandle,
-		this, &UGlyphWeaverSubsystem::RemovePlayerGlyphsInputs, 3.0f, true);
+	GuessGlyphSequence.Add(InPlayerGlyph);
 	
-	PrintGlyphsSequence(PlayerGlyphSequence);
+	GetWorld()->GetTimerManager().SetTimer(UpdateGuessGlyphsTimerHandle,
+		this, &UGlyphWeaverSubsystem::RemoveGuessGlyphsInputs, 3.0f, true);
 	
-	UE_LOG(LogTemp, Warning, TEXT("Matches %s"), GlyphMatcher->Matches(GlyphPuzzle.Sequence, PlayerGlyphSequence, 4, GlyphPuzzle.Rules)
+	UGlyphWeaverUtils::PrintSequence(GuessGlyphSequence);
+	
+	UE_LOG(LogGlyphWeaver, Warning, TEXT("Matches %s"),
+		GlyphMatcher->Matches(GlyphPuzzle.Sequence, GuessGlyphSequence, 4, GlyphPuzzle.Rules)
 		? TEXT("True") : TEXT("False"));
 }
 
-void UGlyphWeaverSubsystem::RemovePlayerGlyphsInputs()
+void UGlyphWeaverSubsystem::RemoveGuessGlyphsInputs()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Remove Player Glyph"));
+	UE_LOG(LogGlyphWeaver, Warning, TEXT("Remove Player Glyph"));
 	
-	PlayerGlyphSequence.Empty();
+	OnGuessGlyphSequenceModified.Broadcast(GuessGlyphSequence);
 	
-	GetWorld()->GetTimerManager().ClearTimer(UpdatePlayerGlyphsTimerHandle);
+	GuessGlyphSequence.Empty();
 	
-	PrintGlyphsSequence(PlayerGlyphSequence);
+	GetWorld()->GetTimerManager().ClearTimer(UpdateGuessGlyphsTimerHandle);
+	
+	UGlyphWeaverUtils::PrintSequence(GuessGlyphSequence);
 }
 
-void UGlyphWeaverSubsystem::PrintGlyphsSequence(FGlyphSequence& GlyphSequenceToPrint)
+void UGlyphWeaverSubsystem::SetPause(bool InIsPaused)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Glyphs count: %d\n"), GlyphSequenceToPrint.Size());
-	
-	for (int i = 0; i < GlyphSequenceToPrint.Size(); i++)
+	if (InIsPaused)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Glyph %d: %s"), i, *GlyphSequenceToPrint.Get(i).Name.ToString());
+		GetWorld()->GetTimerManager().ClearTimer(UpdateGuessGlyphsTimerHandle);
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().SetTimer(UpdateGuessGlyphsTimerHandle,
+			this, &UGlyphWeaverSubsystem::RemoveGuessGlyphsInputs, 3.0f, true);
 	}
 }

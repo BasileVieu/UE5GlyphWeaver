@@ -14,21 +14,19 @@ public class GlyphWeaver : ModuleRules
 			}
 		);
 
-
 		PrivateIncludePaths.AddRange(
 			new string[]
 			{
 			}
 		);
 
-
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core"
+				"Core",
+				"DeveloperSettings"
 			}
 		);
-
 
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
@@ -40,7 +38,6 @@ public class GlyphWeaver : ModuleRules
 				"EnhancedInput"
 			}
 		);
-
 
 		DynamicallyLoadedModuleNames.AddRange(
 			new string[]

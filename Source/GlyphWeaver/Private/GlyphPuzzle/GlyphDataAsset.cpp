@@ -2,5 +2,5 @@
 
 FGlyph UGlyphDataAsset::CreateGlyph() const
 {
-	return FGlyph(Name, Value);
+	return FGlyph(GlyphName, GlyphValue);
 }

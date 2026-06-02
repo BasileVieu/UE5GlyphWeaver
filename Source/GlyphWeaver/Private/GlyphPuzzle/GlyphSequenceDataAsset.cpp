@@ -4,6 +4,7 @@
 FGlyphSequence UGlyphSequenceDataAsset::CreateGlyphSequence()
 {
 	FGlyphSequence Sequence;
+	Sequence.Name = SequenceName;
 	
 	for (int i = 0; i < GlyphDataAssets.Num(); i++)
 	{

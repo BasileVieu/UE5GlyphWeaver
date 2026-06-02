@@ -8,6 +8,11 @@
 class UGlyphPuzzleDataAsset;
 class UGlyphMatcher;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGlyphEvent, FGlyph&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGlyphSequenceEvent, FGlyphSequence&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGlyphRuleEvent, UGlyphPuzzleRule*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGlyphPuzzleEvent, FGlyphPuzzle&);
+
 UCLASS()
 class GLYPHWEAVER_API UGlyphWeaverSubsystem : public UGameInstanceSubsystem
 {
@@ -15,22 +20,34 @@ class GLYPHWEAVER_API UGlyphWeaverSubsystem : public UGameInstanceSubsystem
 	
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	
 	/**
 	 * Initialize PuzzleGlyphSequence.
-	 * @param InPuzzleDataAsset Original Puzzle
+	 * @param InPuzzleDataAsset Original puzzle data asset.
 	 */
-	UFUNCTION(BlueprintCallable, Category="GlyphWeaver", meta=(ToolTip="Initialize PuzzleGlyphSequence"))
-	void SetupPuzzle(UGlyphPuzzleDataAsset* InPuzzleDataAsset);
+	void SetupPuzzle(const UGlyphPuzzleDataAsset* InPuzzleDataAsset);
+
+	/**
+	 * Add a glyph to the guess sequence and begin/reset a timer to empty it.
+	 * @param InPlayerGlyph Glyph to add to the sequence.
+	 */
+	void AddGuessGlyphInput(FGlyph& InPlayerGlyph);
+
+	/**
+	 * Empty guess sequence.
+	 */
+	void RemoveGuessGlyphsInputs();
+	
 	void SetPause(bool InIsPaused);
-	void AddPlayerGlyphInput(const FGlyph& InPlayerGlyph);
-	void RemovePlayerGlyphsInputs();
-	void PrintGlyphsSequence(FGlyphSequence& GlyphsToPrint);
+	
+	FOnGlyphEvent OnGuessGlyphAdded;
+	FOnGlyphSequenceEvent OnGuessGlyphSequenceModified;
 	
 private:
-	FTimerHandle UpdatePlayerGlyphsTimerHandle;
+	FTimerHandle UpdateGuessGlyphsTimerHandle;
 	
 	UPROPERTY()
-	FGlyphSequence PlayerGlyphSequence;
+	FGlyphSequence GuessGlyphSequence;
 	
 	UPROPERTY()
 	UGlyphMatcher* GlyphMatcher;

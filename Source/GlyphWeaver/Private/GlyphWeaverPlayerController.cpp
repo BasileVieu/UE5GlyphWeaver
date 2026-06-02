@@ -52,8 +52,6 @@ void AGlyphWeaverPlayerController::SetPause()
 {
 	IsPaused = !IsPaused;
 	
-	UE_LOG(LogTemp, Warning, TEXT("Pause %d"), IsPaused);
-	
 	GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->SetPause(IsPaused);
 }
 
@@ -61,7 +59,7 @@ void AGlyphWeaverPlayerController::DPadUp(const FInputActionValue& Value)
 {
 	if (Value.Get<bool>())
 	{
-		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddPlayerGlyphInput(GlyphUp);
+		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddGuessGlyphInput(GlyphUp);
 	}
 }
 
@@ -69,7 +67,7 @@ void AGlyphWeaverPlayerController::DPadDown(const FInputActionValue& Value)
 {
 	if (Value.Get<bool>())
 	{
-		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddPlayerGlyphInput(GlyphDown);
+		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddGuessGlyphInput(GlyphDown);
 	}
 }
 
@@ -77,7 +75,7 @@ void AGlyphWeaverPlayerController::DPadLeft(const FInputActionValue& Value)
 {
 	if (Value.Get<bool>())
 	{
-		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddPlayerGlyphInput(GlyphLeft);
+		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddGuessGlyphInput(GlyphLeft);
 	}
 }
 
@@ -85,6 +83,6 @@ void AGlyphWeaverPlayerController::DPadRight(const FInputActionValue& Value)
 {
 	if (Value.Get<bool>())
 	{
-		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddPlayerGlyphInput(GlyphRight);
+		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->AddGuessGlyphInput(GlyphRight);
 	}
 }
