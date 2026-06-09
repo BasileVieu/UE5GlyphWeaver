@@ -1,6 +1,5 @@
 #include "GlyphWeaverEditorModule.h"
-
-#include "GlyphWeaverSettings.h"
+#include "Core/GlyphWeaverSettings.h"
 #include "ToolMenus.h"
 
 IMPLEMENT_MODULE(FGlyphWeaverEditorModule, GlyphWeaverEditor)
