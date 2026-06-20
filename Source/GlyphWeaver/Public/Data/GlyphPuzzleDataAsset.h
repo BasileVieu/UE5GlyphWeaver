@@ -24,6 +24,12 @@ public:
 	 */
 	UPROPERTY(EditAnywhere, Category="GlyphWeaver")
 	FName PuzzleName;
+
+	/**
+	 * Time allowed to the player to add a new input.
+	 */
+	UPROPERTY(EditAnywhere, Category="GlyphWeaver")
+	float ResetTimer = 3.0f;
 	
 	/**
 	 * Sequence data asset used as the puzzle solution.

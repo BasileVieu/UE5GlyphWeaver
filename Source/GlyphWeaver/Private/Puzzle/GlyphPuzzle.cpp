@@ -59,6 +59,21 @@ FGlyph& FGlyphSequence::Get(const int InIndex)
 	return Glyphs[InIndex];
 }
 
+int FGlyphSequence::GetMaxValue() const
+{
+	int Result = std::numeric_limits<int>::min();
+	
+	for (const FGlyph Glyph : Glyphs)
+	{
+		if (Glyph.Value > Result)
+		{
+			Result = Glyph.Value;
+		}
+	}
+	
+	return Result;
+}
+
 int FGlyphSequence::Size() const
 {
 	return Glyphs.Num();

@@ -19,18 +19,29 @@ AGlyphPuzzleActor::AGlyphPuzzleActor()
 void AGlyphPuzzleActor::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->RegisterPuzzleActor(this, GlyphPuzzleDataAsset);
 }
 
-void AGlyphPuzzleActor::Tick(float DeltaTime)
+void AGlyphPuzzleActor::Hide()
 {
-	Super::Tick(DeltaTime);
+	SetActorHiddenInGame(true);
+	SetActorEnableCollision(false);
+	SetActorTickEnabled(false);
+}
+
+void AGlyphPuzzleActor::UnHide()
+{
+	SetActorHiddenInGame(false);
+	SetActorEnableCollision(true);
+	SetActorTickEnabled(true);
 }
 
 void AGlyphPuzzleActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
                                        const FHitResult& SweepResult)
 {
-	APawn* Pawn = Cast<APawn>(OtherActor);
+	const APawn* Pawn = Cast<APawn>(OtherActor);
 
 	if (!Pawn)
 	{
@@ -44,18 +55,16 @@ void AGlyphPuzzleActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent,
 		return;
 	}
 
-	APlayerController* PlayerController = Cast<APlayerController>(Controller);
-
-	if (PlayerController)
+	if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
-		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->SetupPuzzle(PlayerController, GlyphPuzzleDataAsset);
+		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->DetectPuzzle(PlayerController, GlyphPuzzleDataAsset);
 	}
 }
 
 void AGlyphPuzzleActor::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                      UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	APawn* Pawn = Cast<APawn>(OtherActor);
+	const APawn* Pawn = Cast<APawn>(OtherActor);
 
 	if (!Pawn)
 	{
@@ -69,10 +78,8 @@ void AGlyphPuzzleActor::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, A
 		return;
 	}
 
-	APlayerController* PlayerController = Cast<APlayerController>(Controller);
-
-	if (PlayerController)
+	if (const APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
-		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->RemovePuzzle(PlayerController);
+		GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->UnDetectPuzzle(PlayerController);
 	}
 }

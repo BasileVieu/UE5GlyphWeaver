@@ -18,7 +18,9 @@ class GLYPHWEAVER_API AGlyphPuzzleActor : public AActor
 public:
 	AGlyphPuzzleActor();
 	
-	virtual void Tick(float DeltaTime) override;
+	void Hide();
+	
+	void UnHide();
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	USceneComponent* Root;

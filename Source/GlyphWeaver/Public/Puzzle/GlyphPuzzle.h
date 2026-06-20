@@ -86,6 +86,8 @@ struct FGlyphSequence
 	 * @return Reference to the glyph at the given index.
 	 */
 	FGlyph& Get(int InIndex);
+	
+	int GetMaxValue() const;
 
 	/**
 	 * Returns the number of glyphs in the sequence.
@@ -105,23 +107,17 @@ struct FGlyphSequence
 };
 
 /**
- * Defines the current state of a glyph puzzle.
- */
-UENUM(BlueprintType)
-enum class EGlyphPuzzleState : uint8
-{
-	Inactive UMETA(DisplayName = "Inactive"),
-	Active UMETA(DisplayName = "Active"),
-	Solved UMETA(DisplayName = "Solved"),
-};
-
-/**
  * Contains the current sequence, state and rules of a glyph puzzle.
  */
 USTRUCT(Blueprintable)
 struct FGlyphPuzzle
 {
 	GENERATED_BODY()
+
+	/**
+	 * Unique id to identify the corresponding asset data.
+	 */
+	FPrimaryAssetId PrimaryAssetId;
 
 	/**
 	 * Puzzle's unique name;
@@ -136,7 +132,7 @@ struct FGlyphPuzzle
 	/**
 	 * Current puzzle state.
 	 */
-	EGlyphPuzzleState State;
+	bool Solved;
 
 	/**
 	 * Rules applied to the puzzle validation logic.

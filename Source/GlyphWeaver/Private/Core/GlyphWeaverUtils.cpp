@@ -144,7 +144,7 @@ FString UGlyphWeaverUtils::GetPuzzleString(FGlyphPuzzle& InPuzzle, int InIndent)
 	
 	Result += FString::Printf(TEXT("%s\tState=%s\n"),
 		*Tabs,
-		*UEnum::GetValueAsString(InPuzzle.State));
+		InPuzzle.Solved ? TEXT("Solved") : TEXT("Unsolved"));
 	
 	Result += GetSequenceString(InPuzzle.Sequence, InIndent + 1);
 	
