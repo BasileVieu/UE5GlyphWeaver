@@ -2,11 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "Puzzle/GlyphPuzzle.h"
+#include "Puzzle/GlyphPuzzleActor.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "GlyphWeaverSubsystem.generated.h"
 
+struct FPuzzleData;
 class UGlyphWeaverSaveGame;
-class AGlyphPuzzleActor;
 class UGlyphDataAsset;
 struct FInputActionValue;
 class UEnhancedInputLocalPlayerSubsystem;
@@ -14,9 +15,10 @@ class UGlyphPuzzleDataAsset;
 class UGlyphMatcher;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGlyphEvent, const FGlyph&);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnGlyphSequenceEvent, FGlyphSequence&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGlyphSequenceEvent, const FGlyphSequence&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGlyphRuleEvent, UGlyphPuzzleRule*);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnGlyphPuzzleEvent, FGlyphPuzzle&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPuzzleDataEvent, const FPuzzleData&);
+DECLARE_MULTICAST_DELEGATE(FOnEmptyEvent);
 
 USTRUCT()
 struct FPuzzleData
@@ -25,15 +27,22 @@ struct FPuzzleData
 	
 	FPuzzleData()
 	{
+		Puzzle = {};
 		Actor = nullptr;
 		Solved = false;
 	}
 	
-	FPuzzleData(AGlyphPuzzleActor* InActor, bool InSolved)
+	FPuzzleData(const FPrimaryAssetId& InAssetId, FGlyphPuzzle InPuzzle, AGlyphPuzzleActor* InActor, bool InSolved)
 	{
+		AssetId = InAssetId;
+		Puzzle = InPuzzle;
 		Actor = InActor;
 		Solved = InSolved;
 	}
+	
+	FPrimaryAssetId AssetId;
+	
+	FGlyphPuzzle Puzzle;
 	
 	TWeakObjectPtr<AGlyphPuzzleActor> Actor;
 	
@@ -49,8 +58,8 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	
 	void RegisterPuzzleActor(AGlyphPuzzleActor* InActor, const UGlyphPuzzleDataAsset* InPuzzleDataAsset);
-	
-	FGlyphPuzzle CreatePuzzle(const UGlyphPuzzleDataAsset* InPuzzleDataAsset);
+
+	static FGlyphPuzzle CreatePuzzle(const UGlyphPuzzleDataAsset* InPuzzleDataAsset);
 	
 	/**
 	 * Initialize GlyphPuzzle.
@@ -82,9 +91,13 @@ public:
 	 */
 	void PausePuzzleTimer(bool InIsPaused) const;
 	
-	void ValidatePuzzle(FPrimaryAssetId InPrimaryAssetId);
+	void ValidatePuzzle(const FPrimaryAssetId& InPuzzleAssetId);
 	
-	void ResetPuzzle(FPrimaryAssetId InPrimaryAssetId);
+	void ResetPuzzle(const FPrimaryAssetId& InPuzzleAssetId);
+	
+	const TMap<FPrimaryAssetId, FPuzzleData>& GetPuzzles() const;
+	
+	const FPuzzleData* GetCurrentPuzzleData() const;
 	
 	UFUNCTION(BlueprintCallable)
 	void ResetAllPuzzles();
@@ -97,9 +110,11 @@ public:
 	
 	FOnGlyphEvent OnGuessGlyphAdded;
 	FOnGlyphSequenceEvent OnGuessGlyphSequenceModified;
+	FOnPuzzleDataEvent OnRegisteredPuzzle;
+	FOnEmptyEvent OnCurrentPuzzleDataChanged;
 	
 private:
-	void InitializePuzzleActor(AGlyphPuzzleActor* InActor, const UGlyphPuzzleDataAsset* InPuzzleDataAsset);
+	void InitializePuzzleActor(AGlyphPuzzleActor* InActor, const FPuzzleData* InPuzzleData);
 	
 	/**
 	 * Funciton used as lambda to bind all puzzle inputs to the correct values.
@@ -114,9 +129,7 @@ private:
 	
 	void ApplySaveGameData();
 	
-	bool IsPuzzleSolved(const FGlyphPuzzle& InPuzzle);
-	
-	bool IsPuzzleSolved(const UGlyphPuzzleDataAsset* InPuzzleDataAsset);
+	bool IsPuzzleSolved(const FPuzzleData* InPuzzleData);
 	
 	FTimerHandle CurrentTimerHandle;
 	
@@ -126,8 +139,7 @@ private:
 	UPROPERTY()
 	TObjectPtr<UGlyphMatcher> GlyphMatcher;
 	
-	UPROPERTY()
-	FGlyphPuzzle CurrentPuzzle;
+	FPuzzleData* CurrentPuzzleData;
 	
 	UPROPERTY()
 	float CurrentResetTimer;
@@ -145,7 +157,7 @@ private:
 	TArray<int> CachedEnhancedBindings;
 	
 	UPROPERTY()
-	TMap<FPrimaryAssetId, FPuzzleData> Puzzles;
+	TMap<FPrimaryAssetId, FPuzzleData> PuzzleDatas;
 	
 	UPROPERTY()
 	TObjectPtr<UGlyphWeaverSaveGame> SaveGame;

@@ -4,12 +4,13 @@
 #include "Data/GlyphPuzzleDataAsset.h"
 #include "Data/GlyphSequenceDataAsset.h"
 #include "Recognition/GlyphMatcher.h"
-#include "GlyphWeaver.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "TimerManager.h"
 #include "Engine/AssetManager.h"
+#include "Engine/LocalPlayer.h"
+#include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
-#include "Puzzle/GlyphPuzzleActor.h"
 #include "Save/GlyphWeaverSaveGame.h"
 
 void UGlyphWeaverSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -25,21 +26,33 @@ void UGlyphWeaverSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void UGlyphWeaverSubsystem::RegisterPuzzleActor(AGlyphPuzzleActor* InActor, const UGlyphPuzzleDataAsset* InPuzzleDataAsset)
 {
-	FPrimaryAssetId AssetId = InPuzzleDataAsset->GetPrimaryAssetId();
-	
-	if (!Puzzles.Contains(AssetId))
+	if (!InActor
+		|| !InPuzzleDataAsset)
 	{
-		Puzzles.Add(AssetId, FPuzzleData(InActor, false));
+		return;
 	}
 	
-	Puzzles[InPuzzleDataAsset->GetPrimaryAssetId()].Actor = InActor;
+	const FPrimaryAssetId AssetId = InPuzzleDataAsset->GetPrimaryAssetId();
 	
-	InitializePuzzleActor(InActor, InPuzzleDataAsset);
+	FPuzzleData& PuzzleData = PuzzleDatas.FindOrAdd(AssetId);
+	
+	if (PuzzleData.Puzzle.Sequence.Glyphs.Num() == 0)
+	{
+		PuzzleData.AssetId = AssetId;
+		PuzzleData.Puzzle = CreatePuzzle(InPuzzleDataAsset);
+		PuzzleData.Solved = false;
+	}
+	
+	PuzzleData.Actor = InActor;
+	
+	InitializePuzzleActor(InActor, &PuzzleData);
+	
+	OnRegisteredPuzzle.Broadcast(PuzzleData);
 }
 
-void UGlyphWeaverSubsystem::InitializePuzzleActor(AGlyphPuzzleActor* InActor, const UGlyphPuzzleDataAsset* InPuzzleDataAsset)
+void UGlyphWeaverSubsystem::InitializePuzzleActor(AGlyphPuzzleActor* InActor, const FPuzzleData* InPuzzleData)
 {
-	if (IsPuzzleSolved(InPuzzleDataAsset))
+	if (IsPuzzleSolved(InPuzzleData))
 	{
 		InActor->Hide();
 	}
@@ -59,19 +72,27 @@ FGlyphPuzzle UGlyphWeaverSubsystem::CreatePuzzle(const UGlyphPuzzleDataAsset* In
 	NewPuzzle.Sequence = SequenceDataAsset->CreateGlyphSequence();
 	NewPuzzle.Solved = false;
 	NewPuzzle.Rules = InPuzzleDataAsset->Rules;
-	CurrentResetTimer = InPuzzleDataAsset->ResetTimer;
 	
 	return NewPuzzle;
 }
 
 void UGlyphWeaverSubsystem::DetectPuzzle(const APlayerController* InPlayerController, const UGlyphPuzzleDataAsset* InPuzzleDataAsset)
 {
-	if (CachedWorld.IsValid())
+	if (CurrentPuzzleData != nullptr)
 	{
 		return;
 	}
 	
-	CurrentPuzzle = CreatePuzzle(InPuzzleDataAsset);
+	CurrentPuzzleData = PuzzleDatas.Find(InPuzzleDataAsset->GetPrimaryAssetId());
+	
+	if (CurrentPuzzleData == nullptr)
+	{
+		return;
+	}
+	
+	CurrentResetTimer = InPuzzleDataAsset->ResetTimer;
+	
+	OnCurrentPuzzleDataChanged.Broadcast();
 	
 	CachedWorld = InPlayerController->GetWorld();
 	
@@ -98,7 +119,7 @@ void UGlyphWeaverSubsystem::DetectPuzzle(const APlayerController* InPlayerContro
 		CachedEnhancedBindings.Add(Binding.GetHandle());
 	}
 	
-	UGlyphWeaverUtils::PrintPuzzle(CurrentPuzzle);
+	UGlyphWeaverUtils::PrintPuzzle(CurrentPuzzleData->Puzzle);
 }
 
 void UGlyphWeaverSubsystem::UnDetectPuzzle(const APlayerController* InPlayerController)
@@ -116,7 +137,9 @@ void UGlyphWeaverSubsystem::UnDetectPuzzle(const APlayerController* InPlayerCont
 	
 	RemoveGuessGlyphsInputs();
 	
-	CurrentPuzzle = {};
+	CurrentPuzzleData = nullptr;
+	
+	OnCurrentPuzzleDataChanged.Broadcast();
 	
 	CachedWorld = nullptr;
 	
@@ -132,12 +155,12 @@ void UGlyphWeaverSubsystem::UnDetectPuzzle(const APlayerController* InPlayerCont
 
 void UGlyphWeaverSubsystem::AddGuessGlyphInput(const FGlyph& InPlayerGlyph)
 {
-	if (!CachedWorld.IsValid())
+	if (CurrentPuzzleData == nullptr)
 	{
 		return;
 	}
 
-	if (!CurrentPuzzle.Sequence.ContainsGlyph(InPlayerGlyph))
+	if (!CurrentPuzzleData->Puzzle.Sequence.ContainsGlyph(InPlayerGlyph))
 	{
 		RemoveGuessGlyphsInputs();
 	}
@@ -151,17 +174,16 @@ void UGlyphWeaverSubsystem::AddGuessGlyphInput(const FGlyph& InPlayerGlyph)
 	
 	UGlyphWeaverUtils::PrintSequence(GuessGlyphSequence);
 	
-	if (GlyphMatcher->Matches(CurrentPuzzle.Sequence, GuessGlyphSequence, CurrentPuzzle.Sequence.GetMaxValue(), CurrentPuzzle.Rules))
+	if (GlyphMatcher->Matches(CurrentPuzzleData->Puzzle.Sequence, GuessGlyphSequence,
+		CurrentPuzzleData->Puzzle.Sequence.GetMaxValue(), CurrentPuzzleData->Puzzle.Rules))
 	{
 		ValidateCurrentPuzzle();
-		
-		UE_LOG(LogGlyphWeaver, Log, TEXT("Current puzzle validated"));
 	}
 }
 
 void UGlyphWeaverSubsystem::RemoveGuessGlyphsInputs()
 {
-	if (!CachedWorld.IsValid())
+	if (CurrentPuzzleData == nullptr)
 	{
 		return;
 	}
@@ -172,12 +194,12 @@ void UGlyphWeaverSubsystem::RemoveGuessGlyphsInputs()
 	
 	CurrentResetTimer = 0.0f;
 	
-	GetWorld()->GetTimerManager().ClearTimer(CurrentTimerHandle);
+	CachedWorld->GetTimerManager().ClearTimer(CurrentTimerHandle);
 }
 
 void UGlyphWeaverSubsystem::PausePuzzleTimer(bool InIsPaused) const
 {
-	if (!CachedWorld.IsValid())
+	if (CurrentPuzzleData == nullptr)
 	{
 		return;
 	}
@@ -192,21 +214,31 @@ void UGlyphWeaverSubsystem::PausePuzzleTimer(bool InIsPaused) const
 	}
 }
 
-void UGlyphWeaverSubsystem::ValidatePuzzle(FPrimaryAssetId InPrimaryAssetId)
+void UGlyphWeaverSubsystem::ValidatePuzzle(const FPrimaryAssetId& InPuzzleAssetId)
 {
-	Puzzles[InPrimaryAssetId].Actor->Hide();
-	Puzzles[InPrimaryAssetId].Solved = true;
+	PuzzleDatas[InPuzzleAssetId].Actor->Hide();
+	PuzzleDatas[InPuzzleAssetId].Solved = true;
 }
 
-void UGlyphWeaverSubsystem::ResetPuzzle(FPrimaryAssetId InPrimaryAssetId)
+void UGlyphWeaverSubsystem::ResetPuzzle(const FPrimaryAssetId& InPuzzleAssetId)
 {
-	Puzzles[InPrimaryAssetId].Actor->UnHide();
-	Puzzles[InPrimaryAssetId].Solved = false;
+	PuzzleDatas[InPuzzleAssetId].Actor->UnHide();
+	PuzzleDatas[InPuzzleAssetId].Solved = false;
+}
+
+const TMap<FPrimaryAssetId, FPuzzleData>& UGlyphWeaverSubsystem::GetPuzzles() const
+{
+	return PuzzleDatas;
+}
+
+const FPuzzleData* UGlyphWeaverSubsystem::GetCurrentPuzzleData() const
+{
+	return CurrentPuzzleData;
 }
 
 void UGlyphWeaverSubsystem::ResetAllPuzzles()
 {
-	for (TTuple Puzzle : Puzzles)
+	for (TTuple Puzzle : PuzzleDatas)
 	{
 		ResetPuzzle(Puzzle.Key);
 	}
@@ -222,42 +254,47 @@ void UGlyphWeaverSubsystem::PlayerInputTriggered(const UGlyphDataAsset* InGlyphD
 
 void UGlyphWeaverSubsystem::ValidateCurrentPuzzle()
 {
-	ValidatePuzzle(CurrentPuzzle.PrimaryAssetId);
+	ValidatePuzzle(CurrentPuzzleData->AssetId);
 	
-	RemoveGuessGlyphsInputs();	
+	RemoveGuessGlyphsInputs();
 }
 
 void UGlyphWeaverSubsystem::RetrieveSaveGameData()
 {
-	Puzzles.Empty();
+	PuzzleDatas.Empty();
 
-	for (TTuple Puzzle : SaveGame->PuzzlesSaved)
+	for (TTuple PuzzleSaved : SaveGame->PuzzlesSaved)
 	{
-		Puzzles.Add(Puzzle.Key, FPuzzleData(nullptr, Puzzle.Value));
+		UGlyphPuzzleDataAsset* DataAsset = Cast<UGlyphPuzzleDataAsset>(UAssetManager::Get().GetPrimaryAssetObject(PuzzleSaved.Key));
+		
+		FPuzzleData NewPuzzleData;
+		NewPuzzleData.AssetId = PuzzleSaved.Key;
+		NewPuzzleData.Puzzle = CreatePuzzle(DataAsset);
+		NewPuzzleData.Solved = PuzzleSaved.Value;
+		
+		PuzzleDatas.Add(NewPuzzleData.AssetId, NewPuzzleData);
 	}
 }
 
 void UGlyphWeaverSubsystem::ApplySaveGameData()
 {
-	for (TTuple Puzzle : Puzzles)
+	for (TTuple Puzzle : PuzzleDatas)
 	{
 		if (Puzzle.Value.Actor.IsValid())
 		{
-			InitializePuzzleActor(Puzzle.Value.Actor.Get(), Cast<UGlyphPuzzleDataAsset>(UAssetManager::Get().GetPrimaryAssetObject(Puzzle.Key)));
+			InitializePuzzleActor(Puzzle.Value.Actor.Get(), &Puzzle.Value);
 		}
 	}
 }
 
-bool UGlyphWeaverSubsystem::IsPuzzleSolved(const FGlyphPuzzle& InPuzzle)
+bool UGlyphWeaverSubsystem::IsPuzzleSolved(const FPuzzleData* InPuzzleData)
 {
-	return Puzzles.Contains(InPuzzle.PrimaryAssetId)
-		&& Puzzles[InPuzzle.PrimaryAssetId].Solved;
-}
-
-bool UGlyphWeaverSubsystem::IsPuzzleSolved(const UGlyphPuzzleDataAsset* InPuzzleDataAsset)
-{
-	return Puzzles.Contains(InPuzzleDataAsset->GetPrimaryAssetId())
-		&& Puzzles[InPuzzleDataAsset->GetPrimaryAssetId()].Solved;
+	if (const FPuzzleData* Data = PuzzleDatas.Find(InPuzzleData->AssetId))
+	{
+		return Data->Solved;
+	}
+	
+	return false;
 }
 
 void UGlyphWeaverSubsystem::Save()
@@ -269,11 +306,11 @@ void UGlyphWeaverSubsystem::Save()
 	
 	SaveGame->PuzzlesSaved.Empty();
 	
-	for (TTuple Puzzle : Puzzles)
+	for (TTuple Puzzle : PuzzleDatas)
 	{
 		if (Puzzle.Value.Solved)
 		{
-			SaveGame->PuzzlesSaved.Add(Puzzle.Key, Puzzle.Value.Solved);
+			SaveGame->PuzzlesSaved.Add(Puzzle.Value.AssetId, Puzzle.Value.Solved);
 		}
 	}
 	
@@ -289,5 +326,3 @@ void UGlyphWeaverSubsystem::Load()
 		SaveGame = Cast<UGlyphWeaverSaveGame>(UGameplayStatics::CreateSaveGameObject(UGlyphWeaverSaveGame::StaticClass()));
 	}
 }
-
-/*EDITOR AVEC DEBUG TEMPS REEL*/

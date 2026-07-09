@@ -7,7 +7,8 @@ public class GlyphWeaverEditor : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core"
+				"Core",
+				"SlateCore", "GlyphWeaver"
 			});
 		
 		PrivateDependencyModuleNames.AddRange(
@@ -16,14 +17,14 @@ public class GlyphWeaverEditor : ModuleRules
 				"Core",
 				"CoreUObject",
 				"Engine",
-				"GlyphWeaver",
 				"Slate",
 				"SlateCore",
+				"EditorStyle",
 				"UnrealEd",
+				"LevelEditor",
 				"ToolMenus",
 				"PropertyEditor",
-				"LevelEditor",
-				"EditorStyle"
+				"GlyphWeaver"
 			}
 		);
 	}

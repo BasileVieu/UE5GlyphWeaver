@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "UObject/PrimaryAssetId.h"
 #include "GlyphPuzzle.generated.h"
 
 class UGlyphPuzzleRule;

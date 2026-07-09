@@ -50,7 +50,7 @@ bool FGlyphSequence::ContainsGlyph(const FGlyph& InGlyph) const
 			return true;
 		}
 	}
-	
+
 	return false;
 }
 
@@ -62,7 +62,7 @@ FGlyph& FGlyphSequence::Get(const int InIndex)
 int FGlyphSequence::GetMaxValue() const
 {
 	int Result = std::numeric_limits<int>::min();
-	
+
 	for (const FGlyph Glyph : Glyphs)
 	{
 		if (Glyph.Value > Result)
@@ -70,7 +70,7 @@ int FGlyphSequence::GetMaxValue() const
 			Result = Glyph.Value;
 		}
 	}
-	
+
 	return Result;
 }
 

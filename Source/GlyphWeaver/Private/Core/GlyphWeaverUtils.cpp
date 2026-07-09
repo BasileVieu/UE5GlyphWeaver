@@ -25,7 +25,7 @@ void UGlyphWeaverUtils::PrintMultipleLines(const FString& InString)
 	
 	for (const FString& Line : ResultArray)
 	{
-		UE_LOG(LogGlyphWeaverDebug, Verbose, TEXT("%s"), *Line);
+		UE_LOG(LogGlyphWeaver, Verbose, TEXT("%s"), *Line);
 	}
 }
 

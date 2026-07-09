@@ -24,7 +24,8 @@ public class GlyphWeaver : ModuleRules
 			new string[]
 			{
 				"Core",
-				"DeveloperSettings"
+				"DeveloperSettings",
+				"CoreUObject"
 			}
 		);
 

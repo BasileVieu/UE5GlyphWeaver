@@ -5,7 +5,6 @@
 #define LOCTEXT_NAMESPACE "FGlyphWeaverModule"
 
 DEFINE_LOG_CATEGORY(LogGlyphWeaver);
-DEFINE_LOG_CATEGORY(LogGlyphWeaverDebug);
 
 void FGlyphWeaverModule::StartupModule()
 {

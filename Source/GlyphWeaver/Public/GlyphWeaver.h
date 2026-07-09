@@ -5,7 +5,6 @@
 #include "Modules/ModuleManager.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogGlyphWeaver, Log, All);
-DECLARE_LOG_CATEGORY_EXTERN(LogGlyphWeaverDebug, Verbose, All);
 
 class FGlyphWeaverModule : public IModuleInterface
 {
