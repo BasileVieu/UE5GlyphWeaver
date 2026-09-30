@@ -73,7 +73,33 @@ void FGlyphWeaverEditorModule::RegisterMenus()
 			                                           FExecuteAction::CreateRaw(this, &FGlyphWeaverEditorModule::OnToggleDebugEnable),
 			                                           FCanExecuteAction(),
 			                                           FIsActionChecked::CreateRaw(this, &FGlyphWeaverEditorModule::IsDebugEnabled)),
-		                                           EUserInterfaceActionType::ToggleButton);
+			                                           EUserInterfaceActionType::ToggleButton);
+
+		                   SubSection.AddSubMenu("GlyphWeaverConsoleVerbosity",
+		                                         FText::FromString("GlyphWeaver Log Console Verbosity"),
+		                                         FText::FromString("Change GlyphWeaver log verbosity in console"),
+		                                         FNewMenuDelegate::CreateLambda([this](FMenuBuilder& MenuBuilder)
+		                                         {
+			                                         for (uint8 Index = 0; Index <= static_cast<uint8>(EGlyphWeaverConsoleVerbosity::Trace); ++Index)
+			                                         {
+				                                         const auto Verbosity = static_cast<EGlyphWeaverConsoleVerbosity>(Index);
+
+				                                         MenuBuilder.AddMenuEntry(UEnum::GetDisplayValueAsText(Verbosity),
+					                                         FText::GetEmpty(),
+					                                         FSlateIcon(),
+					                                         FUIAction(FExecuteAction::CreateLambda([this, Verbosity]
+					                                                   {
+						                                                   SetConsoleVerbosity(Verbosity);
+					                                                   }),
+					                                                   FCanExecuteAction(),
+					                                                   FIsActionChecked::CreateLambda([this, Verbosity]
+					                                                   {
+						                                                   return GetConsoleVerbosity() == Verbosity;
+					                                                   })),
+					                                         NAME_None,
+					                                         EUserInterfaceActionType::RadioButton);
+			                                         }
+		                                         }));
 	                   }));
 }
 
@@ -89,6 +115,13 @@ void FGlyphWeaverEditorModule::OnToggleDebugEnable()
 	Settings->DebugEnabled = !Settings->DebugEnabled;
 }
 
+void FGlyphWeaverEditorModule::SetConsoleVerbosity(const EGlyphWeaverConsoleVerbosity InConsoleVerbosity)
+{
+	UGlyphWeaverSettings* Settings = GetMutableDefault<UGlyphWeaverSettings>();
+	
+	Settings->ConsoleVerbosity = InConsoleVerbosity;
+}
+
 void FGlyphWeaverEditorModule::OpenTab()
 {
 	FGlobalTabmanager::Get()->TryInvokeTab(GlyphWeaverEditorTabName);
@@ -96,7 +129,12 @@ void FGlyphWeaverEditorModule::OpenTab()
 
 bool FGlyphWeaverEditorModule::IsDebugEnabled() const
 {
-	return GetDefault<UGlyphWeaverSettings>()->DebugEnabled;
+	return GetDefault<UGlyphWeaverSettings>()->GetDebugEnabled();
+}
+
+EGlyphWeaverConsoleVerbosity FGlyphWeaverEditorModule::GetConsoleVerbosity() const
+{
+	return GetDefault<UGlyphWeaverSettings>()->GetConsoleVerbosity();
 }
 
 TSharedRef<SDockTab> FGlyphWeaverEditorModule::OnSpawnTab(const FSpawnTabArgs& InSpawnTabArgs)

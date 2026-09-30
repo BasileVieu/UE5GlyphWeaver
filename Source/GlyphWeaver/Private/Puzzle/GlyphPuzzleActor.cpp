@@ -23,6 +23,26 @@ void AGlyphPuzzleActor::BeginPlay()
 	GetGameInstance()->GetSubsystem<UGlyphWeaverSubsystem>()->RegisterPuzzleActor(this, GlyphPuzzleDataAsset);
 }
 
+void AGlyphPuzzleActor::PuzzleValidated_Implementation()
+{
+	PuzzleValidated_CPP();
+}
+
+void AGlyphPuzzleActor::PuzzleValidated_CPP()
+{
+	Hide();
+}
+
+void AGlyphPuzzleActor::PuzzleReset_Implementation()
+{
+	PuzzleReset_CPP();
+}
+
+void AGlyphPuzzleActor::PuzzleReset_CPP()
+{
+	UnHide();
+}
+
 void AGlyphPuzzleActor::Hide()
 {
 	SetActorHiddenInGame(true);

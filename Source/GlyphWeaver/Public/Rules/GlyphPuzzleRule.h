@@ -80,6 +80,7 @@ public:
 	 * @param InTargetSize Int representing the size of the target sequence.
 	 * @return A FGlyphVariants that contains the new variants used by the matcher.
 	 */
+	UFUNCTION(BlueprintCallable)
 	virtual FGlyphVariants Apply_CPP(const FGlyphVariants& InVariants, int InModulo, int InTargetSize);
 
 	/**

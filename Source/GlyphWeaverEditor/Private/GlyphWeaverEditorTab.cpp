@@ -55,6 +55,9 @@ void SGlyphWeaverEditorTab::OnEndPIE(const bool InIsSimulating)
 	{
 		PuzzlesVerticalBox->ClearChildren();
 	}
+	
+	PuzzleSlots.Empty();
+	CurrentPuzzleSlotAssetId = FPrimaryAssetId();
 }
 
 void SGlyphWeaverEditorTab::TryToBindToRuntimeSubsystem()
@@ -98,20 +101,53 @@ void SGlyphWeaverEditorTab::InitializeMainSlot()
 			SNew(SVerticalBox)
 			+ SVerticalBox::Slot()
 			.AutoHeight()
-			.Padding(10.0f)
+			.Padding(0.0f, 0.5f)
 			[
-				SNew(STextBlock)
-				.Text(FText::FromString(TEXT("Puzzles")))
-				.Justification(ETextJustify::Center)
+				SNew(SBorder)
+				.BorderBackgroundColor(FLinearColor::Red)
+				.Padding(2.0f)
+				[
+					SNew(SVerticalBox)
+					+ SVerticalBox::Slot()
+					.AutoHeight()
+					.Padding(10.0f)
+					[
+						SNew(STextBlock)
+						.Text(FText::FromString(TEXT("Puzzles")))
+						.Justification(ETextJustify::Center)
+					]
+					+ SVerticalBox::Slot()
+					.FillHeight(1.0f)
+					[
+						SNew(SHorizontalBox)
+						+ SHorizontalBox::Slot()
+						.FillWidth(1.0f)
+						[
+							SAssignNew(PuzzlesVerticalBox, SVerticalBox)
+						]
+					]
+				]
 			]
 			+ SVerticalBox::Slot()
-			.FillHeight(1.0f)
+			.AutoHeight()
 			[
-				SNew(SHorizontalBox)
-				+ SHorizontalBox::Slot()
-				.FillWidth(1.0f)
+				SNew(SBorder)
+				.BorderBackgroundColor(FLinearColor::Blue)
+				.Padding(2.0f)
 				[
-					SAssignNew(PuzzlesVerticalBox, SVerticalBox)
+					SNew(SScrollBox)
+					+ SScrollBox::Slot()
+					.Padding(5.0f)
+					[
+						SNew(SVerticalBox)
+						+ SVerticalBox::Slot()
+						.Padding(2.0f)
+						[
+							SNew(STextBlock)
+							.Text(FText::FromString(TEXT("Test Log")))
+							.Justification(ETextJustify::Center)
+						]
+					]
 				]
 			]
 		]
@@ -205,27 +241,48 @@ void SGlyphWeaverEditorTab::UpdateCurrentPuzzleSlot()
 	}
 	else if (CurrentPuzzleData->AssetId != CurrentPuzzleSlotAssetId)
 	{
-		if (CurrentPuzzleSlotAssetId.IsValid())
+		if (const FPuzzleSlotData* SlotData = PuzzleSlots.Find(CurrentPuzzleData->AssetId))
 		{
-			RestorePuzzleSlot(PuzzleSlots[CurrentPuzzleSlotAssetId]);
+			RestorePuzzleSlot(*SlotData);
 		}
 		
 		CurrentPuzzleSlotAssetId = CurrentPuzzleData->AssetId;
 		
-		MovePuzzleSlotToTop(PuzzleSlots[CurrentPuzzleSlotAssetId]);
+		const FPuzzleSlotData* SlotData = PuzzleSlots.Find(CurrentPuzzleData->AssetId);
+		
+		if (SlotData == nullptr)
+		{
+			return;
+		}
+		
+		MovePuzzleSlotToTop(*SlotData);
 	}
 }
 
 void SGlyphWeaverEditorTab::RestorePuzzleSlot(const FPuzzleSlotData& InPuzzleSlotData) const
 {
-	PuzzlesVerticalBox->RemoveSlot(InPuzzleSlotData.MainWidget.ToSharedRef());
+	if (!PuzzlesVerticalBox.IsValid()
+		|| !InPuzzleSlotData.MainWidget.IsValid())
+	{
+		return;
+	}
+	
+	const int32 RemovedIndex = PuzzlesVerticalBox->RemoveSlot(InPuzzleSlotData.MainWidget.ToSharedRef());
+	
+	if (RemovedIndex == INDEX_NONE)
+	{
+		return;
+	}
 
 	PuzzlesVerticalBox->InsertSlot(InPuzzleSlotData.OriginalOrderIndex)
 	                  .AutoHeight()
 	                  .Padding(5.0f)
 		[InPuzzleSlotData.MainWidget.ToSharedRef()];
 	
-	InPuzzleSlotData.Name->SetTextStyle(&GetPuzzleTextStyle(false), true);
+	if (InPuzzleSlotData.Name.IsValid())
+	{
+		InPuzzleSlotData.Name->SetTextStyle(&GetPuzzleTextStyle(false), true);
+	}
 }
 
 void SGlyphWeaverEditorTab::MovePuzzleSlotToTop(const FPuzzleSlotData& InPuzzleSlotData) const

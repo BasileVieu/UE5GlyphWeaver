@@ -10,7 +10,7 @@ class UBoxComponent;
 /**
  * Actor used to represent the puzzle in the world including a box component to trigger the puzzle.
  */
-UCLASS()
+UCLASS(Blueprintable)
 class GLYPHWEAVER_API AGlyphPuzzleActor : public AActor
 {
 	GENERATED_BODY()
@@ -18,8 +18,22 @@ class GLYPHWEAVER_API AGlyphPuzzleActor : public AActor
 public:
 	AGlyphPuzzleActor();
 	
+	UFUNCTION(BlueprintNativeEvent)
+	void PuzzleValidated();
+	
+	UFUNCTION(BlueprintCallable)
+	void PuzzleValidated_CPP();
+	
+	UFUNCTION(BlueprintNativeEvent)
+	void PuzzleReset();
+	
+	UFUNCTION(BlueprintCallable)
+	void PuzzleReset_CPP();
+	
+	UFUNCTION(BlueprintCallable)
 	void Hide();
 	
+	UFUNCTION(BlueprintCallable)
 	void UnHide();
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "GlyphWeaverUtils.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogGlyphWeaver, Display, All);
+
 struct FGlyph;
 struct FGlyphSequence;
 struct FGlyphPuzzle;
@@ -21,41 +23,7 @@ public:
 	static bool IsDebugEnabled();
 	
 	static FString GetIndent(int InDepth);
-
-	/**
-	 * Transform one line to multiple ones to be able to filter them correctly in console log.
-	 * @param InString Original string to transform.
-	 */
-	static void PrintMultipleLines(const FString& InString);
-
-	/**
-	 * Print glyph's data in console log.
-	 * @param InGlyph Glyph instance to print.
-	 */
-	UFUNCTION(BlueprintCallable)
-	static void PrintGlyph(FGlyph& InGlyph);
-
-	/**
-	 * Print sequence's data in console log.
-	 * @param InGlyphSequence Sequence instance to print.
-	 */
-	UFUNCTION(BlueprintCallable)
-	static void PrintSequence(FGlyphSequence& InGlyphSequence);
-
-	/**
-	 * Print rule's data in console log.
-	 * @param InRule Pointer's rule to print.
-	 */
-	UFUNCTION(BlueprintCallable)
-	static void PrintRule(UGlyphPuzzleRule* InRule);
-
-	/**
-	 * Print sequence's data in console log.
-	 * @param InPuzzle Sequence instance to print.
-	 */
-	UFUNCTION(BlueprintCallable)
-	static void PrintPuzzle(FGlyphPuzzle& InPuzzle);
-
+	
 	/**
 	 * Create and populate a string with glyph's data.
 	 * @param InGlyph Glyph instance to transform into string.

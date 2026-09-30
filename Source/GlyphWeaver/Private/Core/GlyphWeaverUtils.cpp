@@ -2,7 +2,8 @@
 #include "Core/GlyphWeaverSettings.h"
 #include "Puzzle/GlyphPuzzle.h"
 #include "Rules/GlyphPuzzleRule.h"
-#include "GlyphWeaver.h"
+
+DEFINE_LOG_CATEGORY(LogGlyphWeaver);
 
 bool UGlyphWeaverUtils::IsDebugEnabled()
 {
@@ -15,58 +16,6 @@ bool UGlyphWeaverUtils::IsDebugEnabled()
 FString UGlyphWeaverUtils::GetIndent(int InDepth)
 {
 	return FString::ChrN(InDepth, TEXT('\t'));
-}
-
-void UGlyphWeaverUtils::PrintMultipleLines(const FString& InString)
-{
-	TArray<FString> ResultArray;
-	
-	InString.ParseIntoArrayLines(ResultArray);
-	
-	for (const FString& Line : ResultArray)
-	{
-		UE_LOG(LogGlyphWeaver, Verbose, TEXT("%s"), *Line);
-	}
-}
-
-void UGlyphWeaverUtils::PrintGlyph(FGlyph& InGlyph)
-{
-	if (!IsDebugEnabled())
-	{
-		return;
-	}
-	
-	PrintMultipleLines(GetGlyphString(InGlyph, 0));
-}
-
-void UGlyphWeaverUtils::PrintSequence(FGlyphSequence& InGlyphSequence)
-{
-	if (!IsDebugEnabled())
-	{
-		return;
-	}
-	
-	PrintMultipleLines(GetSequenceString(InGlyphSequence, 0));
-}
-
-void UGlyphWeaverUtils::PrintRule(UGlyphPuzzleRule* InRule)
-{
-	if (!IsDebugEnabled())
-	{
-		return;
-	}
-	
-	PrintMultipleLines(GetRuleString(InRule, 0));
-}
-
-void UGlyphWeaverUtils::PrintPuzzle(FGlyphPuzzle& InPuzzle)
-{
-	if (!IsDebugEnabled())
-	{
-		return;
-	}
-	
-	PrintMultipleLines(GetPuzzleString(InPuzzle, 0));
 }
 
 FString UGlyphWeaverUtils::GetGlyphString(FGlyph& InGlyph, int InIndent)

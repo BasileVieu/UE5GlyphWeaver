@@ -6,6 +6,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "GlyphWeaverSubsystem.generated.h"
 
+class UInputMappingContext;
 struct FPuzzleData;
 class UGlyphWeaverSaveGame;
 class UGlyphDataAsset;
@@ -46,7 +47,8 @@ struct FPuzzleData
 	
 	TWeakObjectPtr<AGlyphPuzzleActor> Actor;
 	
-	bool Solved;
+	bool Solved = false;
+	bool Loaded = false;
 };
 
 UCLASS()
@@ -59,7 +61,7 @@ public:
 	
 	void RegisterPuzzleActor(AGlyphPuzzleActor* InActor, const UGlyphPuzzleDataAsset* InPuzzleDataAsset);
 
-	static FGlyphPuzzle CreatePuzzle(const UGlyphPuzzleDataAsset* InPuzzleDataAsset);
+	static FGlyphPuzzle CreatePuzzle(const UGlyphPuzzleDataAsset* InPuzzleDataAsset, bool InSolved);
 	
 	/**
 	 * Initialize GlyphPuzzle.
@@ -97,7 +99,7 @@ public:
 	
 	const TMap<FPrimaryAssetId, FPuzzleData>& GetPuzzles() const;
 	
-	const FPuzzleData* GetCurrentPuzzleData() const;
+	FPuzzleData* GetCurrentPuzzleData();
 	
 	UFUNCTION(BlueprintCallable)
 	void ResetAllPuzzles();
@@ -139,22 +141,22 @@ private:
 	UPROPERTY()
 	TObjectPtr<UGlyphMatcher> GlyphMatcher;
 	
-	FPuzzleData* CurrentPuzzleData;
+	FPrimaryAssetId CurrentPuzzleAssetId;
 	
 	UPROPERTY()
 	float CurrentResetTimer;
 	
-	UPROPERTY()
 	TWeakObjectPtr<UWorld> CachedWorld;
 	
-	UPROPERTY()
 	TWeakObjectPtr<UEnhancedInputLocalPlayerSubsystem> CachedEnhancedSubsystem;
 	
-	UPROPERTY()
 	TWeakObjectPtr<UEnhancedInputComponent> CachedEnhancedComponent;
 	
 	UPROPERTY()
 	TArray<int> CachedEnhancedBindings;
+	
+	UPROPERTY()
+	TObjectPtr<UInputMappingContext> CachedInputMappingContext;
 	
 	UPROPERTY()
 	TMap<FPrimaryAssetId, FPuzzleData> PuzzleDatas;
